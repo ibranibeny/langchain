@@ -1,0 +1,50 @@
+from dotenv import load_dotenv
+import streamlit as st
+from PyPDF2 import PdfReader
+from langchain.text_splitter import CharacterTextSplitter
+import requests
+from bs4 import BeautifulSoup
+from langchain.document_loaders import TextLoader
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain.embeddings import HuggingFaceEmbeddings
+from langchain.vectorstores import FAISS
+from langchain.chains.question_answering import load_qa_chain
+from langchain import HuggingFaceHub
+
+def main():
+    load_dotenv()
+    st.set_page_config(page_title="Ask your PDF")
+    st.header("Ask your PDF 💬")
+    
+    # upload file
+    pdf = st.file_uploader("Upload your PDF", type="pdf")
+    
+    # extract the text
+    if pdf is not None:
+      pdf_reader = PdfReader(pdf)
+      text = ""
+      for page in pdf_reader.pages:
+        text += page.extract_text()
+        
+      #st.write(text)
+      
+      # split into chunks
+      text_splitter = CharacterTextSplitter(
+        separator="\n",
+        chunk_size=1000,
+        chunk_overlap=200,
+        length_function=len
+      )
+      chunks = text_splitter.split_text(text)
+      st.write(chunks)    
+
+#        st.write(response)
+
+import os
+os.environ["HUGGINGFACEHUB_API_TOKEN"] = ""
+
+
+
+
+if __name__ == '__main__':
+    main()
