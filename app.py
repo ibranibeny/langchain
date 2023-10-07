@@ -14,8 +14,10 @@ from langchain.embeddings import OpenAIEmbeddings, HuggingFaceInstructEmbeddings
 from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationalRetrievalChain
 from langchain.chat_models import ChatOpenAI
+import os
 
 def main():
+    os.environ["HUGGINGFACEHUB_API_TOKEN"] = "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"
     load_dotenv()
     st.set_page_config(page_title="Ask your PDF")
     st.header("Ask your PDF 💬")
@@ -39,16 +41,30 @@ def main():
         chunk_overlap=200,
         length_function=len
       )
-      chunks = text_splitter.split_text(text)
-      st.write(chunks)    
+      text_chunks = text_splitter.split_text(text)
+      st.write(text_chunks)    
 
     # For Huggingface Embeddings
 
     embeddings = HuggingFaceInstructEmbeddings(model_name = "hkunlp/instructor-xl")
-    vectorstore = FAISS.from_texts(texts = chunks, embedding = embeddings)
- 
+    #vector_store = FAISS.from_texts(texts = text_chunks, embedding = embeddings)
+    vector_store = FAISS.from_texts(text_chunks, embeddings)
     #st.write(vectorstore)
+    
 
+    # HuggingFace Model
+
+    llm = HuggingFaceHub(repo_id="tiiuae/falcon-40b-instruct", model_kwargs={"temperature":0.5, "max_length":512})
+    memory = ConversationBufferMemory(memory_key='chat_history', return_messages=True)
+    conversation_chain = ConversationalRetrievalChain.from_llm(
+        llm = llm,
+        retriever = vector_store.as_retriever(),
+        memory = memory
+    )
+    st.write("DONE")
+
+    # Create conversation chain
+    st.session_state.conversation =  get_conversation_chain(vector_store)
 
 if __name__ == '__main__':
     main()
