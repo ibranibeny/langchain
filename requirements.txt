@@ -10,3 +10,4 @@ huggingface_hub
 sentence_transformers
 InstructorEmbedding
 openai==0.28.1
+tiktoken
