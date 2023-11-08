@@ -9,4 +9,4 @@ beautifulsoup4
 huggingface_hub
 sentence_transformers
 InstructorEmbedding
-openai==1.1.0
+openai==0.28.1
